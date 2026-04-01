@@ -166,6 +166,11 @@ def clone_or_pull(repo: str, target_dir: Path, branch: str, token: str) -> None:
 
 def main() -> int:
     try:
+        subprocess.run(
+            ["git", "config", "--global", "--add", "safe.directory", "/work"],
+            check=True,
+        )
+
         app_id = getenv_required("GITHUB_APP_ID")
         repo = getenv_required("GITHUB_REPO")
 

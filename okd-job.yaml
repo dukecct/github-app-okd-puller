@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: github-app-puller-work
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: github-app-puller
+spec:
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 3600
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: puller
+          image: ghcr.io/johnbradley/github-app-okd-puller:0.0.1
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: GITHUB_APP_ID
+              valueFrom:
+                secretKeyRef:
+                  name: duke-academy-env
+                  key: GITHUB_APP_ID
+            - name: GITHUB_REPO
+              value: "your-org/your-repo"
+            - name: GITHUB_APP_PRIVATE_KEY_FILE
+              value: /var/run/secrets/github-app/private-key.pem
+          volumeMounts:
+            - name: github-app-key
+              mountPath: /var/run/secrets/github-app
+              readOnly: true
+            - name: work
+              mountPath: /work
+      volumes:
+        - name: github-app-key
+          secret:
+            secretName: github-app-pem
+            items:
+              - key: github-app-key.pem
+                path: private-key.pem
+        - name: work
+          persistentVolumeClaim:
+            claimName: github-app-puller-work
