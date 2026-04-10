@@ -112,3 +112,4 @@ On release publish, GitHub Actions builds and pushes the image tagged with the r
 - `ghcr.io/<owner>/<repo>:<release-tag>`
 
 The workflow uses `secrets.GITHUB_TOKEN` with `packages: write` permission.
+
